@@ -21,13 +21,16 @@ export class CaseConverter {
                 splitter = ' ';
                 break;
             case TextCaseKind.PascalCase:
+                splitter = /[^A-Za-z0-9]+/;
                 break;
             case TextCaseKind.CamelCase:
+                splitter = /[^A-Za-z0-9]+/;
                 shouldBeLowerFirstChar = true;
                 break;
             case TextCaseKind.SnakeCase:
             case TextCaseKind.KebabCase:
             default:
+                splitter = /[^A-Za-z0-9]+/;
                 isSnakeKebab = true;
                 shouldBeLowerFirstChar = true;
                 break;
