@@ -9,14 +9,42 @@ export class CaseConverter {
         let splitter: string | RegExp = /[\W\s]+/;
         let shouldBeLowerFirstChar = false;
         let isSnakeOrKebab = false;
+        // Special handling for SentenceCase: capitalize first letter of each sentence
+        if (caseKind === TextCaseKind.SentenceCase) {
+            let result = '';
+            let i = 0;
+            let capitalizeNext = true;
+            while (i < text.length) {
+                const ch = text[i];
+                if (capitalizeNext && /[A-Za-z]/.test(ch)) {
+                    result += ch.toUpperCase();
+                    capitalizeNext = false;
+                    i++;
+                    continue;
+                }
+                result += ch;
+                if (/[.!?]/.test(ch)) {
+                    // collapse any following whitespace to a single space and set next char to be capitalized
+                    let j = i + 1;
+                    while (j < text.length && text[j] === ' ') {
+                        j++;
+                    }
+                    if (j < text.length) {
+                        result += ' ';
+                        capitalizeNext = true;
+                        i = j;
+                        continue;
+                    }
+                }
+                i++;
+            }
+            return result.trimEnd();
+        }
         switch (caseKind) {
             case TextCaseKind.Uppercase:
                 return text.toUpperCase();
             case TextCaseKind.LowerCase:
                 return text.toLowerCase();
-            case TextCaseKind.SentenceCase:
-                splitter = '.';
-                break;
             case TextCaseKind.StartCase:
                 splitter = ' ';
                 break;
@@ -36,7 +64,9 @@ export class CaseConverter {
                 break;
         }
         let splits = text.split(splitter).map(y => y.trim()).filter(x => x.length > 0);
-
+        if (splits.length === 0) {
+            throw Error("Please select a non-empty text to change case!");
+        }
         for (let i = 0; i < splits.length; i++) {
             let firstChar: string = "";
             if (i === 0 && shouldBeLowerFirstChar) {
@@ -54,7 +84,8 @@ export class CaseConverter {
             if (caseKind === TextCaseKind.CamelCase ||
                 caseKind === TextCaseKind.PascalCase ||
                 caseKind === TextCaseKind.SnakeCase ||
-                caseKind === TextCaseKind.KebabCase) {
+                caseKind === TextCaseKind.KebabCase ||
+                caseKind === TextCaseKind.StartCase) {
                 restChars = restChars.toLowerCase();
             }
             else if (caseKind === TextCaseKind.SentenceCase && i === splits.length - 1) {
@@ -71,9 +102,6 @@ export class CaseConverter {
                 break;
             case TextCaseKind.KebabCase:
                 joinChar = '-';
-                break;
-            case TextCaseKind.SentenceCase:
-                joinChar = '. ';
                 break;
             case TextCaseKind.StartCase:
                 joinChar = ' ';
