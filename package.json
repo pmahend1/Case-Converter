@@ -142,7 +142,8 @@
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "nyc vscode-test",
+    "check-coverage": "nyc report --reporter=text --reporter=html"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -155,6 +156,7 @@
     "esbuild": "^0.25.4",
     "eslint": "^9.27.0",
     "npm-run-all": "^4.1.5",
+    "nyc": "^17.1.0",
     "typescript": "^5.8.3"
   }
 }

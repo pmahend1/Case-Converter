@@ -8,7 +8,7 @@ export class CaseConverter {
         }
         let splitter: string | RegExp = /[\W\s]+/;
         let shouldBeLowerFirstChar = false;
-        let isSnakeKebab = false;
+        let isSnakeOrKebab = false;
         switch (caseKind) {
             case TextCaseKind.Uppercase:
                 return text.toUpperCase();
@@ -21,36 +21,48 @@ export class CaseConverter {
                 splitter = ' ';
                 break;
             case TextCaseKind.PascalCase:
-                splitter = /[^A-Za-z0-9]+/;
+                splitter = /(?<=[a-z])(?=[A-Z])|[^A-Za-z0-9]+/;
                 break;
             case TextCaseKind.CamelCase:
-                splitter = /[^A-Za-z0-9]+/;
+                splitter = /(?<=[a-z])(?=[A-Z])|[^A-Za-z0-9]+/;
                 shouldBeLowerFirstChar = true;
                 break;
             case TextCaseKind.SnakeCase:
             case TextCaseKind.KebabCase:
             default:
-                splitter = /[^A-Za-z0-9]+/;
-                isSnakeKebab = true;
+                splitter = /(?<=[a-z])(?=[A-Z])|[^A-Za-z0-9]+/;
+                isSnakeOrKebab = true;
                 shouldBeLowerFirstChar = true;
                 break;
         }
         let splits = text.split(splitter).map(y => y.trim()).filter(x => x.length > 0);
 
         for (let i = 0; i < splits.length; i++) {
-            let firstChar: string = '';
+            let firstChar: string = "";
             if (i === 0 && shouldBeLowerFirstChar) {
                 firstChar = splits[0][0].toLowerCase();
             }
             else {
-                if (isSnakeKebab) {
+                if (isSnakeOrKebab) {
                     firstChar = splits[i][0].toLowerCase();
                 }
                 else {
                     firstChar = splits[i][0].toUpperCase();
                 }
             }
-            splits[i] = firstChar + splits[i].slice(1);
+            var restChars = splits[i].slice(1);
+            if (caseKind === TextCaseKind.CamelCase ||
+                caseKind === TextCaseKind.PascalCase ||
+                caseKind === TextCaseKind.SnakeCase ||
+                caseKind === TextCaseKind.KebabCase) {
+                restChars = restChars.toLowerCase();
+            }
+            else if (caseKind === TextCaseKind.SentenceCase && i === splits.length - 1) {
+                if (text.trim().endsWith('.')) {
+                    restChars = restChars + '.';
+                }
+            }
+            splits[i] = firstChar + restChars;
         }
         let joinChar = '';
         switch (caseKind) {
